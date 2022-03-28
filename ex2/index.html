@@ -121,7 +121,8 @@
         gl.attachShader(shaderProgram, fragmentShader);
         gl.linkProgram(shaderProgram);
 
-        if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        if (!gl.getProgramParameter(shaderProgram,
+         gl.LINK_STATUS)) {
           alert("Could not initialise shaders");
         }
 
@@ -137,16 +138,20 @@
 
           //color
           shaderProgram.vertexColorAttribute = 
-          gl.getAttribLocation(shaderProgram, "aVertexColor");
+          gl.getAttribLocation(shaderProgram, 
+          "aVertexColor");
 
-          gl.enableVertexAttribArray(shaderProgram.vertexColorAttribute);
+          gl.enableVertexAttribArray(
+            shaderProgram.vertexColorAttribute);
 
 
-        shaderProgram.pMatrixUniform = gl.getUniformLocation(
+        shaderProgram.pMatrixUniform = 
+        gl.getUniformLocation(
           shaderProgram,
           "uPMatrix"
         );
-        shaderProgram.mvMatrixUniform = gl.getUniformLocation(
+        shaderProgram.mvMatrixUniform =
+         gl.getUniformLocation(
           shaderProgram,
           "uMVMatrix"
         );
