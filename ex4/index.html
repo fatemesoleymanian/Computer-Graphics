@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Four - Fateme Soleymanian - 981113024</title>
+    <script type="text/javascript" src="./lib/three.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+
+        }
+    </style>
+</head>
+
+<body>
+    <div id="output">
+
+    </div>
+    <script type="text/javascript">
+        let scene, camera, renderer, boxMesh, surfaceMesh,circle;
+
+        init();
+        animate();
+
+        function init() {
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setClearColor(new THREE.Color(0xcccfff));
+            renderer.setSize(window.innerWidth, window.innerHeight);
+
+            scene = new THREE.Scene();
+
+            camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.001, 1000);
+            camera.position.set(0, 0, 10);
+            camera.lookAt(scene.position);
+
+            //make light
+            let ambientLight = new THREE.AmbientLight(
+                0xffffff, //color
+                0.5 //shedt
+            );
+            scene.add(ambientLight);
+
+            //another light
+            let pointLight = new THREE.PointLight(
+                0xffffff, //color
+                0.7 //shedt
+            );
+            scene.add(pointLight);
+
+            //make surface
+            let Surface = new THREE.PlaneGeometry(500, 700);
+            let SurfaceMaterial = new THREE.MeshBasicMaterial({ color: 0x1a1719 });
+            surfaceMesh = new THREE.Mesh(Surface, SurfaceMaterial);
+            surfaceMesh.position.set(0, 50, -1100);
+
+            //make circle
+            const geometry = new THREE.CircleGeometry( 30   , 32 );
+            const material = new THREE.MeshBasicMaterial( { color: 0xffffbb } );
+            circle = new THREE.Mesh( geometry, material );
+            circle.position.set(-350,-100,-800);
+            scene.add( circle );
+           
+        
+
+            //make a cube
+            let BoxGeometry = new THREE.BoxGeometry(100, 100, 100);
+            //basic material
+            //  let BoxMaterial = new THREE.MeshBasicMaterial({ color : 0xf3ffe2});
+            let BoxMaterial = new THREE.MeshLambertMaterial(
+                { map: new THREE.TextureLoader().load('./media/eleph.jpg') }
+            );
+            boxMesh = new THREE.Mesh(BoxGeometry, BoxMaterial);
+            boxMesh.position.set(0, 20, -1000);
+
+            scene.add(boxMesh);
+            scene.add(surfaceMesh);
+
+            document.getElementById('output').appendChild(renderer.domElement);
+
+        }
+        function animate() {
+            boxMesh.rotation.y += 0.1;
+            boxMesh.rotation.x += 0.01;
+            surfaceMesh.rotation.x = -0.8;
+
+            circle.position.x += 0.3;
+
+
+            renderer.render(scene, camera);
+            requestAnimationFrame(animate);
+
+        }
+    </script>
+</body>
+
+</html>
