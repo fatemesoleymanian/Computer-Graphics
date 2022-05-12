@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>car game - Eercise five - Grop work - Fatemesoleymanian - Mahdie Azizi</title>
+
+  
+
+    <script type="text/javascript" src="./three.js"></script>
+
+</head>
+<body style="height: 100vh;overflow: hidden;">
+
+<div class="container">
+    <!--webGL-->
+    <div id="web-gl">
+        
+    </div>
+</div>
+
+<script id="scriptScene0" type="text/javascript">
+    var scene, camera, renderer ,cube;
+   
+
+    window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener('keydown',onDocumentKeyDown,false);
+
+    init();
+    animate();
+
+    // once everything is loaded, we run our Three.js stuff.
+    function init() {
+        //  create a scene, that will hold all our elements such as objects, cameras and lights.
+        scene = new THREE.Scene();
+
+        //  create a camera, which defines where we're looking at.
+        camera = new THREE.PerspectiveCamera(
+            130,
+             window.innerWidth / window.innerHeight,
+              0.1, 1000);
+        //  position and point the camera to the center of the scene
+        camera.position.y = 60;
+        camera.position.z = 160;
+        camera.lookAt(scene.position);
+
+        //  create a render and set the size
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setClearColor(new THREE.Color(0x34d3eb));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        //  add the output of the renderer to the html element
+        document.getElementById("web-gl").appendChild(renderer.domElement);
+
+        //  Surface
+        var surfaceGeometry = new THREE.PlaneGeometry(300,1000);
+        var surfaceMaterial = new THREE.MeshPhongMaterial({color: 0xcccccc, side: THREE.DoubleSide});
+        var surfaceMesh = new THREE.Mesh(surfaceGeometry, surfaceMaterial);
+        surfaceMesh.rotateX(Math.PI / 2);
+        surfaceMesh.position.y = -50;
+        scene.add(surfaceMesh);
+
+        // add subtle ambient lighting
+        var ambiColor = "#ffffff";
+        var ambientLight = new THREE.AmbientLight(ambiColor,0.5);
+        scene.add(ambientLight);
+
+        //cube as car
+        var cubeGeometry = new THREE.BoxGeometry(30, 30, 30);
+        var cubeMaterial = new THREE.MeshNormalMaterial();
+        cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.z = 120;
+        scene.add(cube);
+
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        var t = (Date.now() / 1000);
+
+        //  render the scene
+        renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    function onDocumentKeyDown(event) {
+        // var div = $('.transform');
+        //left
+        if (event.keyCode == 37) {
+            cube.position.x -= 1;
+        }
+          //up
+          if (event.keyCode == 38) {
+            cube.position.z -= 1;
+        }
+          //right
+          if (event.keyCode == 39) {
+            cube.position.x += 1;
+        }
+        
+    }
+
+</script>
+</body>
+</html>
