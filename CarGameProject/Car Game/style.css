@@ -1,0 +1,89 @@
+#gameover {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    height: 100vh;
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+  }
+  #gameover p {
+    font-family: 'VT323';
+    font-size: 8em;
+    text-align: center;
+    animation-name: example;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+  }
+
+  #win {
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    height: 100vh;
+    position: absolute;
+    width: 100%;
+    opacity: 0;
+  }
+  #win p {
+    font-family: 'VT323';
+    font-size: 8em;
+    text-align: center;
+    animation-name: example;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+  }
+
+  span{
+    font-family: 'VT323';
+    font-size: 45px;
+    text-align: center;
+    animation-name: example;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+  }
+  #win p #score{
+    font-family: 'VT323';
+    font-size: 50px;
+    text-align: center;
+    animation-name: example;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+  }
+
+  @keyframes example {
+    0% {
+      color: yellowgreen;
+      text-shadow: 0 0 20px yellow;
+    }
+    25% {
+      color: yellowgreen;
+      text-shadow: 2px 2px 2px yellow;
+      transform: translate(-2px, 1px);
+    }
+    40% {
+      color: yellowgreen;
+      text-shadow: none;
+      transform: translate(0, 0);
+    }
+    50% {
+      color: yellow;
+      text-shadow: 5px 5px 2px blue, -5px -5px 2px red;
+      transform: translate(0px, 5px);
+    }
+    70% {
+      color: yellowgreen;
+      text-shadow: none;
+      transform: translate(0, 0);
+    }
+    80% {
+      color: yellow;
+      text-shadow: 0 0 20px yellowgreen;
+      transform: translate(-2px, 1px);
+    }
+    100% {
+      color: yellow;
+      text-shadow: none;
+    }
+  }
+  

@@ -1,0 +1,476 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Car Game - Group Project - Fatemesoleymanian - Mahdie Azizi</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+
+
+    <script type="text/javascript" src="./scripts/three.js"></script>
+    <script type="text/javascript" src="./scripts/Tween.js"></script>
+    <script type="text/javascript" src="./scripts/OBJLoader.js"></script>
+
+
+</head>
+<body style="height: 100vh;overflow: hidden;margin:0">
+  
+<div class="container">
+    <div style="position: fixed;right: 10px;top: 3px;padding:10px;">
+        <i class="bi bi-heart-fill" id="heart1" style="font-size: 20px;color:red"></i>
+        <i class="bi bi-heart-fill" id="heart2" style="padding:0 5px;font-size: 20px;color:red"></i>
+        <i class="bi bi-heart-fill" id="heart3" style="font-size: 20px;color:red"></i>
+
+    </div>
+    <div style="position: fixed;left: 15px;top: 3px;padding: 5px;">
+        <i class="bi bi-coin" id="coins" style="font-size: 20px;color:#5c2e17;font-size: 25px;"></i>
+
+    </div>
+    <!-- game over -->
+    <div id="gameover">
+        <p>GAME OVER</p>
+    </div>
+    <!-- win -->
+    <div id="win">
+        <p>YOU WIN!!!!
+            <br><span>Your scores</span>
+            <span id="score"></span>
+        </p>
+    </div>
+    <!--webGL-->
+    <div id="web-gl">
+
+    </div>
+
+</div>
+
+<script id="scriptScene0" type="text/javascript">
+    var scene, camera, renderer ,cube;
+    let x=0;
+    var tween;
+    var tweenCar;
+    let coin;
+    var collidableMeshList = [];
+    var collidableCoinList = [];
+    let hearts = 3;
+    let scores = 1;
+    let coins = [
+            'coin1',
+            'coin2',
+            'coin3',
+            'coin4',
+            'coin5',
+            'coin6',
+            'coin7',
+            'coin8',
+            'coin9',
+            'coin10',
+            'coin11',
+            'coin12',
+            'coin13',
+
+        ]
+    let i=0;
+    let j=0;
+    let obstacle1;
+    let car;
+    let sound;
+
+
+
+    window.addEventListener('resize', onWindowResize, false);
+    window.addEventListener('keydown',onDocumentKeyDown,false);
+
+    init();
+    animate();
+
+    // once everything is loaded, we run our Three.js stuff.
+    function init() {
+
+        //  create a scene, that will hold all our elements such as objects, cameras and lights.
+        scene = new THREE.Scene();
+
+
+        //  create a camera, which defines where we're looking at.
+        camera = new THREE.PerspectiveCamera(
+            130,
+             window.innerWidth / window.innerHeight,
+              0.1, 1000);
+        //  position and point the camera to the center of the scene
+        camera.position.y = 60;
+        camera.position.z = 160;
+        camera.lookAt(scene.position);
+
+        //  create a render and set the size
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setClearColor(new THREE.Color(0x34d3eb));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        //  add the output of the renderer to the html element
+        document.getElementById("web-gl").appendChild(renderer.domElement);
+
+        //Sky
+        let reflectionCube = new THREE.CubeTextureLoader()
+            .setPath('/media/')
+            .load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
+        reflectionCube.format = THREE.RGBFormat;
+        scene.background = reflectionCube;
+
+
+        
+         //  Surface Texture
+         var texture = new THREE.TextureLoader().load('./media/desert-texture.jpg');
+       
+         texture.repeat.set(100, 80);
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.magFilter = THREE.NearestFilter;
+        texture.minFilter = THREE.LinearMipMapLinearFilter;
+       
+
+        //Surface Mesh
+        var surface = new THREE.PlaneGeometry(3000, 13500);
+        var surfaceMaterial = new THREE.MeshPhongMaterial({color: 0xffffff, side: THREE.DoubleSide, map: texture});
+        var surfaceMesh = new THREE.Mesh(surface, surfaceMaterial);
+        surfaceMesh.rotateX(Math.PI / 2);
+        surfaceMesh.position.y = -50;
+        surfaceMesh.position.z = -300;
+        scene.add(surfaceMesh);
+
+
+         //  Road Texture
+         var textureRoad = new THREE.TextureLoader().load('./media/Road-Texture.jpg');
+
+        textureRoad.repeat.set(1, 100);
+        textureRoad.wrapS = THREE.RepeatWrapping;
+        textureRoad.wrapT = THREE.RepeatWrapping;
+        textureRoad.magFilter = THREE.LinearFilter;
+        textureRoad.minFilter = THREE.LinearMipMapLinearFilter;
+
+        var road = new THREE.PlaneGeometry(300, 17000);
+        var roadMaterial = new THREE.MeshPhongMaterial({color: 0xcccccc, side: THREE.DoubleSide, map: textureRoad});
+        var roadMesh = new THREE.Mesh(road, roadMaterial);
+        roadMesh.rotateX(Math.PI / 2);
+        roadMesh.position.y = -49;
+        roadMesh.position.z = -700;
+        scene.add(roadMesh);
+
+    
+        // add subtle ambient lighting
+        var ambiColor = "#ffffff";
+        var ambientLight = new THREE.AmbientLight(ambiColor,0.5);
+        scene.add(ambientLight);
+
+        //cube as car
+        var cubeGeometry = new THREE.BoxGeometry(30, 30, 20);
+        var cubeMaterial = new THREE.MeshNormalMaterial();
+        cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+        cube.position.z = 120;
+        scene.add(cube);
+        cube.visible= false;
+
+        
+        var obsGeometry = new THREE.BoxGeometry(30, 20, 5);
+        var obsMaterial = new THREE.MeshBasicMaterial({color: '0x000'} );
+        let tmpCube = new THREE.Mesh(obsGeometry, obsMaterial);
+        tmpCube.position.z = -150;
+        scene.add(tmpCube);
+
+        collidableMeshList.push(tmpCube);
+        tmpCube.visible=true;
+       
+
+        //Car
+        let objectLoader = new THREE.ObjectLoader();
+        objectLoader.load("./models/car.json", 
+        function (obj) {
+            obj.position.z = -150;
+          
+            obj.scale.set(25, 28,8);
+            car = obj.clone();
+            car.position.z = 120;
+            car.position.y = -5;
+            scene.add(car);
+            // console.log(car)
+        });
+      
+
+        //obstacles
+        var obstacles = [
+            'cube21',
+            'cube2',
+            'cube3',
+            'cube4',
+            'cube5',
+            'cube6',
+            'cube7',
+            'cube8',
+            'cube9',
+            'cube10',
+            'cube11',
+            'cube12',
+            'cube13',
+            'cube14',
+            'cube15',
+            'cube16',
+            'cube17',
+            'cube18',
+            'cube19',
+            'cube20',
+        ]
+        for(let i=0;i<15 ; i++)
+        {
+            obstacles[i] = tmpCube.clone();
+            obstacles[i].position.z = (-400*i);
+            if(i%3 === 1)  obstacles[i].position.x = 75;
+            else if(i%3 === 2)  obstacles[i].position.x = 0;
+            else obstacles[i].position.x = -75;
+            collidableMeshList.push(obstacles[i]);
+            scene.add(obstacles[i]);
+        }
+
+
+        // coin texture
+        let cointexture = new THREE.TextureLoader().load('./media/coin.jpg');
+
+        cointexture.magFilter = THREE.NearestFilter;
+        cointexture.minFilter = THREE.NearestFilter;
+
+        let coinGeometry = new THREE.CircleGeometry(15, 150, 300);
+        let coinMaterial = new THREE.MeshPhongMaterial({
+            map: cointexture,
+            shininess: 10,
+            specular: 0xffffff
+        });
+        coin = new THREE.Mesh(coinGeometry, coinMaterial);
+        coin.position.set(0, 0, -255);
+        
+        
+          //coin
+          let circleGeometry = new THREE.CircleGeometry(8,32);
+        let circleMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        coin = new THREE.Mesh(circleGeometry,circleMaterial);
+        coin.position.z = -225;
+   
+        //texture
+        cointexture = new THREE.TextureLoader().load('./media/coin.jpg');
+
+        cointexture.magFilter = THREE.NearestFilter;
+        cointexture.minFilter = THREE.NearestFilter;
+
+        coinGeometry = new THREE.CircleGeometry(15, 150, 300);
+        coinMaterial = new THREE.MeshPhongMaterial({
+            map: cointexture,
+            shininess: 10,
+            specular: 0xffffff,
+        });
+        coin = new THREE.Mesh(coinGeometry, coinMaterial);
+        coin.position.set(0, 0, -225);
+        scene.add(coin);
+
+        collidableCoinList.push(coin)
+        //coins
+
+
+        for(let i=0;i<13 ; i++)
+        {
+            coins[i] = coin.clone();
+            coins[i].position.z = (-600*i);
+            if(i%3 === 1)  coins[i].position.x = 75;
+            else if(i%3 === 2)  coins[i].position.x = 0;
+            else coins[i].position.x = -75;
+            collidableCoinList.push(coins[i])
+            scene.add(coins[i]);
+
+        }
+        
+        const listener = new THREE.AudioListener();
+        camera.add( listener );
+
+        // song
+         sound = new THREE.Audio( listener );
+
+        // load a sound and set it as the Audio object's buffer
+        const audioLoader = new THREE.AudioLoader();
+        audioLoader.load( './media/audio.mpeg', function( buffer ) {
+            sound.setBuffer( buffer );
+            sound.setLoop( true );
+            sound.setVolume( 0.5 );
+            sound.play();
+            // console.log(sound.play())
+        });
+    }
+
+   
+    function animate() {
+
+        document.getElementById("coins").innerHTML = scores
+        if(hearts === 0 || scores === 0) {
+           document.getElementById("gameover").style.opacity = '1';
+           setTimeout(document.getElementById("gameover").style.background='black',
+            3000000);
+            sound.setVolume( 0.1 );
+        }
+        if(cube.position.z<=-5700 && hearts !== 0)
+        {
+            document.getElementById("win").style.opacity = '1';
+           setTimeout(document.getElementById("win").style.background='brown',
+            3000000);
+            document.getElementById("score").innerHTML = scores;
+            sound.setVolume( 0.1 );
+
+        }
+
+        if(hearts === 2) document.getElementById("heart3").style.display = 'none'
+        if(hearts === 1) document.getElementById("heart2").style.display = 'none'
+        if(hearts === 0) document.getElementById("heart1").style.display = 'none';
+
+
+        requestAnimationFrame(animate);
+
+        var t = (Date.now() / 100);
+        cube.position.z-=1;
+        car.position.z-=1;
+        camera.position.z-=1;
+
+        //coin rotation
+        coin.rotation.y += 0.2;
+        for(let i=0;i<13 ; i++)
+        {
+            coins[i].rotation.y += 0.2;
+        }
+        TWEEN.update();
+
+          //collision
+         let originPoint = cube.position.clone();
+
+        for (let vertexIndex = 0; vertexIndex < 1; vertexIndex++)
+            {
+
+            let localVertex = cube.geometry.vertices[vertexIndex].clone();
+            let globalVertex = localVertex.applyMatrix4(cube.matrix);
+            let directionVector = globalVertex.sub(cube.position);
+
+            let ray =
+            new THREE.Raycaster(
+                originPoint, directionVector.clone().normalize());
+            let collisionResults = ray.intersectObjects(collidableMeshList);
+                    
+        //obstacle collide
+        if (collisionResults.length >0 && 
+        collisionResults[0].distance < directionVector.length()+1)
+             {
+            //    console.log(collisionResults[0].distance)
+                if(collisionResults[0].distance<3) hearts--;
+
+             }
+
+                  
+                    }
+                   
+                    //coin collision
+
+                    let localVertex = cube.geometry.vertices[0].clone();
+                    let globalVertex = localVertex.applyMatrix4(cube.matrix);
+                    let directionVector = globalVertex.sub(cube.position);
+
+                    let ray =
+                    new THREE.Raycaster(
+                        originPoint, directionVector.clone().normalize());
+                    let collisionCoinResults = ray.intersectObjects(collidableCoinList);
+
+                    //obstacle collide
+                   
+                    if (collisionCoinResults.length >0 && 
+                    collisionCoinResults[0].distance < directionVector.length())
+                    {
+                       scores++;    
+                    }
+
+                
+
+
+        //  render the scene
+        renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    function onDocumentKeyDown(event) {
+
+        //left
+        if (event.keyCode == 37) {
+
+            if( x === 0)
+            {
+                x = -1;
+                var target = {x:-75};
+                tween = new TWEEN.Tween(cube.position).to(target, 500);
+                tweenCar = new TWEEN.Tween(car.position).to(target, 500);
+
+                tween.easing(TWEEN.Easing.Sinusoidal.In);
+                tweenCar.easing(TWEEN.Easing.Sinusoidal.In);
+                tween.start();
+                tweenCar.start();
+            }
+
+            if( x === 1)
+            {
+                x = 0;
+                var target = {x:0};
+                tweenCar = new TWEEN.Tween(car.position).to(target, 500);
+                tween = new TWEEN.Tween(cube.position).to(target, 500);
+
+                tween.easing(TWEEN.Easing.Sinusoidal.In);
+                tweenCar.easing(TWEEN.Easing.Sinusoidal.In);
+                tween.start();
+                tweenCar.start();
+            }
+
+         }
+          //up
+          if (event.keyCode == 38) {
+            cube.position.z -= 5;
+            car.position.z -= 5;
+            camera.position.z -= 5;
+        }
+          //right
+          if (event.keyCode == 39) {
+
+            if(x === 0)
+              {
+                x =1;
+                var target = {x: 75 };
+                tween = new TWEEN.Tween(cube.position).to(target, 500);
+                tweenCar = new TWEEN.Tween(car.position).to(target, 500);
+
+                tween.easing(TWEEN.Easing.Sinusoidal.In);
+                tweenCar.easing(TWEEN.Easing.Sinusoidal.In);
+                tween.start();
+                tweenCar.start();
+              }
+
+              if(x === -1)
+              {
+                x =0;
+                var target = {x: 0 };
+                tween = new TWEEN.Tween(cube.position).to(target, 500);
+                tweenCar = new TWEEN.Tween(car.position).to(target, 500);
+
+                tween.easing(TWEEN.Easing.Sinusoidal.In);
+                tweenCar.easing(TWEEN.Easing.Sinusoidal.In);
+                tween.start();
+                tweenCar.start();
+              }
+        }
+
+    }
+    
+</script>
+</body>
+</html>
